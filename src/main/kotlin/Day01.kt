@@ -1,15 +1,7 @@
 fun main() {
-    fun part1(input: List<String>): Int {
-        return countDepthIncreasesFromStrings(input)
-    }
-
-    fun part2(input: List<String>): Int {
-        return slidingWindows(input)
-    }
-
     val input = readInput("Day01")
-    println(part1(input))
-    println(part2(input))
+    println(countDepthIncreasesFromStrings(input))
+    println(slidingWindows(input))
 }
 
 fun countDepthIncreasesFromStrings(input: List<String>): Int = countDepthIncreases(input.map { it.toInt() })
