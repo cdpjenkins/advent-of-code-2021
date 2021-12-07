@@ -7,6 +7,12 @@ class Day03Test {
     internal fun `day 3 part 1 test input`() {
         assertThat(day3Part1CalculatePowerConsumption(day3TestInput), equalTo(198))
     }
+
+    @Test
+    internal fun `day 3 part 2 calculates oxygen generator rating`() {
+        assertThat(day3Part2CalculateLifeSupportRating(day3TestInput), equalTo(230))
+
+    }
 }
 
 val day3TestInput = """
