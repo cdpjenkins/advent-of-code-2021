@@ -1,3 +1,6 @@
+package day2
+
+import readInput
 import java.lang.IllegalArgumentException
 
 fun main() {

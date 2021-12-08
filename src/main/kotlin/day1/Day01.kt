@@ -1,3 +1,7 @@
+package day1
+
+import readInput
+
 fun main() {
     val input = readInput("Day01")
     println(countDepthIncreasesFromStrings(input))

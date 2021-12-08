@@ -1,3 +1,6 @@
+package day4
+
+import readInput
 import java.lang.AssertionError
 
 fun main() {
