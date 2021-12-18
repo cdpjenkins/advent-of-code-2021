@@ -6,12 +6,51 @@ fun main() {
     val input = readInput("Day09")
 
     println(sumOfRiskLevelsOfLowPoints(input))
+    println(productOfSizesOfTop3Basins(input))
 }
 
 fun sumOfRiskLevelsOfLowPoints(input: List<String>): Int {
     val heightMap = input.toHeightMap()
     val lowPoints = heightMap.keys.filter { it.isLowPoint(heightMap) }
     return lowPoints.map { heightMap[it]!! + 1 }.sum()
+}
+
+fun productOfSizesOfTop3Basins(input: List<String>): Int =
+    basins(input)
+        .map { it.size }
+        .sorted()
+        .reversed()
+        .take(3)
+        .reduce { lhs, rhs -> lhs * rhs }
+
+private fun basins(input: List<String>): List<Set<Point>> {
+    val heightMap = input.toHeightMap()
+    val lowPoints = heightMap.keys.filter { it.isLowPoint(heightMap) }
+
+    return lowPoints.map { it.computeBasin(heightMap) }
+}
+
+private fun Point.computeBasin(
+    heightMap: Map<Point, Int>,
+    basinPoints: Set<Point> = emptySet()
+): Set<Point> {
+    var newBasinPoints = basinPoints + this
+
+    val neighboursInSameBasin =
+        neighbourCoords()
+            .filter {
+                !(it in newBasinPoints)
+                        && heightMap[it] != null
+                        && heightMap[it] != 9
+            }
+
+    // could probably do this with reduce and make it properly functional
+    for (neighbour in neighboursInSameBasin) {
+        newBasinPoints = newBasinPoints +
+                neighbour.computeBasin(heightMap, newBasinPoints)
+    }
+
+    return newBasinPoints
 }
 
 private fun List<String>.toHeightMap(): HashMap<Point, Int> {

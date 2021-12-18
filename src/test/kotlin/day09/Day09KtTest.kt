@@ -9,6 +9,11 @@ internal class Day09KtTest {
     internal fun `day 9 part 1`() {
         assertThat(sumOfRiskLevelsOfLowPoints(input), equalTo(15))
     }
+
+    @Test
+    internal fun `day 9 part 2 basins`() {
+        assertThat(productOfSizesOfTop3Basins(input), equalTo(1134))
+    }
 }
 
 val input = """
