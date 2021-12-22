@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 internal class Day21KtTest {
     @Test
     internal fun `day 21 part 1 deterministic dice`() {
-        val result = day21Part1DeterministicDice()
+        val result = day21Part1DeterministicDice(input)
         assertThat(result, equalTo(739785))
 
     }

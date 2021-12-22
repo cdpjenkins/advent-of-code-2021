@@ -10,7 +10,7 @@ fun main() {
 }
 
 
-private fun day21Part1DeterministicDice(input: CharSequence): Int {
+fun day21Part1DeterministicDice(input: CharSequence): Int {
     val regex = Regex(
         "Player 1 starting position: ([0-9]{1,2})\nPlayer 2 starting position: ([0-9]{1,2})"
     )
