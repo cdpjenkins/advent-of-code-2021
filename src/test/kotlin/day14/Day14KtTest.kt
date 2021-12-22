@@ -21,6 +21,11 @@ class Day14KtTest {
         assertThat(day14Part1(input), equalTo(2584))
     }
 
+    @Test
+    internal fun `day 14 part 2 with test data`() {
+        assertThat(day14Part2(input), equalTo(2188189693529L))
+    }
+
     @ParameterizedTest
     @CsvSource(
         "NNCB,NCNBCHB",
