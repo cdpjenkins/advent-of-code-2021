@@ -8,12 +8,17 @@ internal class Day25KtTest {
     @Test
     internal fun `east moving cucumbers move east if way is clear`() {
         val worlds = worldsSequence("...>>>>>...")
-        assertThat(iteration(worlds, 1), equalTo("...>>>>.>..".trimIndent()))
-        assertThat(iteration(worlds, 2), equalTo("...>>>.>.>.".trimIndent()))
+        assertThat(worlds.iteration(1), equalTo("...>>>>.>.."))
+        assertThat(worlds.iteration(2), equalTo("...>>>.>.>."))
+    }
+
+    @Test
+    internal fun `east moving cucumbers wrap when they reach the eastern edge of the world`() {
+        assertThat(worldsSequence("..........>").iteration(1), equalTo(">.........."))
     }
 }
 
-private fun iteration(worlds: Sequence<World>, i: Int) = worlds.drop(i).first().toPrintableString()
+private fun Sequence<World>.iteration(i: Int) = drop(i).first().toPrintableString()
 private fun worldsSequence(input: String) = generateSequence(worldFrom(input)) { it.move() }
 private fun worldFrom(input: String) = input.trimIndent().lines().parse()
 
