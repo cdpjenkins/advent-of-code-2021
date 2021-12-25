@@ -16,10 +16,26 @@ internal class Day25KtTest {
     internal fun `east moving cucumbers wrap when they reach the eastern edge of the world`() {
         assertThat(worldsSequence("..........>").iteration(1), equalTo(">.........."))
     }
+
+    @Test
+    internal fun `south facing cucumers move south`() {
+        val worldsSequence = worldsSequence(
+            """
+                .v
+                ..
+            """
+        )
+        assertThat(worldsSequence.iteration(1), equalTo(
+            """
+                ..
+                .v
+            """.trimIndent()
+        ))
+    }
 }
 
 private fun Sequence<World>.iteration(i: Int) = drop(i).first().toPrintableString()
-private fun worldsSequence(input: String) = generateSequence(worldFrom(input)) { it.move() }
+private fun worldsSequence(input: String) = generateSequence(worldFrom(input.trimIndent())) { it.move() }
 private fun worldFrom(input: String) = input.trimIndent().lines().parse()
 
 private fun List<String>.parse(): World {
@@ -43,10 +59,10 @@ data class World(val points: Map<Point, Char>, val width: Int, val height: Int) 
     fun move(): World {
         val newPoints = (0..height - 1).flatMap { y ->
             (0..width - 1).map { x ->
-                val value = points[Point(x, y)]
+                val value = pointAt(x, y)
                 val newValue = when (value) {
-                    '.' -> if (points[Point(x - 1, y)] == '>') '>' else '.'
-                    '>' -> if (points[Point(x + 1, y)] == '.') '.' else '>'
+                    '.' -> if (pointAt(x - 1, y) == '>') '>' else '.'
+                    '>' -> if (pointAt(x + 1, y) == '.') '.' else '>'
                     else -> '.'
                 }
                 Point(x, y) to newValue
@@ -55,6 +71,8 @@ data class World(val points: Map<Point, Char>, val width: Int, val height: Int) 
 
         return World(newPoints, width, height)
     }
+
+    private fun pointAt(x: Int, y: Int) = points[Point(x.mod(width), y)]
 }
 
 data class Point(val x: Int, val y: Int)
