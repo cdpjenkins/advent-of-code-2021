@@ -6,6 +6,24 @@ import org.junit.jupiter.api.Test
 
 internal class Day25KtTest {
     @Test
+    internal fun `day 25 part 1 when the cucumbers stop moving with test data`() {
+        val input =
+            """
+                v...>>.vv>
+                .vv>>.vv..
+                >>.>v>...v
+                >>v>>.>.v.
+                v>v.vv.v..
+                >.>>..v...
+                .vv..>.>v.
+                v.v..>>v.v
+                ....v..v.>
+            """.trimIndent()
+
+        assertThat(day25Part1StepsUntilCucumbersStopMoving(input), equalTo(58))
+    }
+
+    @Test
     internal fun `east moving cucumbers move east if way is clear`() {
         val worlds = worldsSequence("...>>>>>...")
         assertThat(worlds.iteration(1), equalTo("...>>>>.>.."))
@@ -50,4 +68,3 @@ internal class Day25KtTest {
         ))
     }
 }
-

@@ -1,7 +1,23 @@
 package day25
 
-fun main() {
+import java.io.File
+import java.lang.AssertionError
 
+fun main() {
+    val input = File("src/main/resources", "Day25.txt").readText()
+
+    println(day25Part1StepsUntilCucumbersStopMoving(input))
+}
+
+fun day25Part1StepsUntilCucumbersStopMoving(input: String): Int {
+    val index =
+        worldsSequence(input)
+            .zip(worldsSequence(input).drop(1))
+            .withIndex()
+            .find { it.value.first == it.value.second }?.index
+            ?: throw AssertionError("Oh golly")
+
+    return index + 1
 }
 
 fun Sequence<World>.iteration(i: Int) = elementAt(i).toPrintableString()
