@@ -6,8 +6,11 @@ import java.util.*
 fun main() {
     val input = readInput("Day15")
 
+    val startTime = System.currentTimeMillis()
     println(day15Part1DijsktraMinPath(input))
     println(day15Part2DijkstraMinPathFiveTimesBigger(input))
+    val endTime = System.currentTimeMillis()
+    println("Time taken: ${endTime - startTime}")
 }
 
 fun day15Part1DijsktraMinPath(input: List<String>): Int {
