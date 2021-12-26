@@ -9,6 +9,11 @@ internal class Day15KtTest {
     internal fun `day 15 part 1`() {
         assertThat(day15Part1DijsktraMinPath(input), equalTo(40))
     }
+
+    @Test
+    internal fun `day 15 part 2`() {
+        assertThat(day15Part2DijkstraMinPathFiveTimesBigger(input), equalTo(315))
+    }
 }
 
 val input = """
