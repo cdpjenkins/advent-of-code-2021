@@ -2,18 +2,38 @@ package day22
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class Day22KtTest {
     @Test
-    internal fun `day 22 part 1 with simple test data`() {
+    fun `day 22 part 1 with simple test data`() {
         assertThat(countCubesTurnedOn(input1), equalTo(39))
     }
 
     @Test
-    internal fun `day 22 part 1 with more complex test data`() {
+    fun `day 22 part 1 with more complex test data`() {
         assertThat(countCubesTurnedOn(input2), equalTo(590784))
     }
+
+    @Test
+    fun `overlapping cuboids overlap`() {
+        assertTrue(cuboid("x=0..100,y=0..100,z=0..100") overlapsWith cuboid("x=50..150,y=50..150,z=50..150"))
+    }
+
+    @Test
+    fun `cuboids overlap even if only edges touch`() {
+        assertTrue(cuboid("x=0..100,y=0..100,z=0..100") overlapsWith cuboid("x=100..200,y=100..200,z=100..200"))
+    }
+
+    @Test
+    fun `finds intersection of two cuboids`() {
+        assertThat(cuboid("x=0..100,y=0..100,z=0..100").intersectionWith(cuboid("x=50..150,y=50..150,z=50..150")),
+                equalTo(cuboid("x=50..100,y=50..100,z=50..100"))
+            )
+    }
+
+    private fun cuboid(cuboidString: String) = command("on $cuboidString").cuboid
 }
 
 val input1 = """
