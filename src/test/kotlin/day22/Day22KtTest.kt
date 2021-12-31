@@ -126,9 +126,9 @@ internal class Day22KtTest {
         )
     }
 
-    private fun commands(vararg commandString: String) = commandString.map { command(it) }
+    private fun commands(vararg commandString: String) = commandString.map { Command.parse(it) }
 
-    private fun cuboid(cuboidString: String) = command("on $cuboidString").cuboid
+    private fun cuboid(cuboidString: String) = Command.parse("on $cuboidString").cuboid
 }
 
 val input1 = """
@@ -136,7 +136,7 @@ val input1 = """
             on x=11..13,y=11..13,z=11..13
             off x=9..11,y=9..11,z=9..11
             on x=10..10,y=10..10,z=10..10
-        """.trimIndent().lines()
+        """.trimIndent().lines().parse()
 
 val input2 = """
             on x=-20..26,y=-36..17,z=-47..7
@@ -161,7 +161,7 @@ val input2 = """
             on x=-41..9,y=-7..43,z=-33..15
             on x=-54112..-39298,y=-85059..-49293,z=-27449..7877
             on x=967..23432,y=45373..81175,z=27513..53682
-        """.trimIndent().lines()
+        """.trimIndent().lines().parse()
 
 val input3 =
     """
@@ -225,4 +225,4 @@ val input3 =
         off x=-70369..-16548,y=22648..78696,z=-1892..86821
         on x=-53470..21291,y=-120233..-33476,z=-44150..38147
         off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
-    """.trimIndent().lines()
+    """.trimIndent().lines().parse()
