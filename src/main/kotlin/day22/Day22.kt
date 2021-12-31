@@ -7,26 +7,36 @@ import java.lang.Integer.min
 fun main() {
     val input = readInput("Day22")
 
-    println(countCubesTurnedOn(input))
+    println(countCubesInInitialisationSection(input))
+    println(countCubesInAllRebootSteps(input))
+}
 
-    val cuboids = input.parse()
-    for ((i, cuboid) in cuboids.withIndex()) {
-        println(cuboid)
-        println(cuboids.filter { cuboid.cuboid overlapsWith it.cuboid }.filter {it.action == Action.on }.size)
-        println(cuboids.filter { cuboid.cuboid overlapsWith it.cuboid }.filter {it.action == Action.off }.size)
+fun List<Command>.compile(): List<Command> =
+    this.fold(emptyList()) { acc, command -> acc + processCommand(command, acc) }
+
+fun processCommand(newCommand: Command, commandsSoFar: List<Command>): List<Command> {
+    val overlappingCommands = commandsSoFar.filter { it.cuboid overlapsWith newCommand.cuboid }
+    val newCommands = overlappingCommands.map { newCommand.combineWith(it) }
+
+    if (newCommand.action == Action.on) {
+        return newCommands + newCommand
+    } else {
+        return newCommands
     }
 }
 
-fun countCubesTurnedOn(input: List<String>): Int {
-    val cubes: MutableSet<Point3D> = mutableSetOf()
-    val cuboids = input.parse()
+fun countCubesInInitialisationSection(input: List<String>) =
+    input.parse()
+        // strictly speaking we need to check for cuboids that are only partially in the box... bvut there don't
+        // appear to be any in the input
+        .filter { it.cuboid.insideInitialisationSection() }
+        .compile()
+        .fold(0L) { acc, command -> acc + command.value() }
 
-    for (cuboid in cuboids) {
-        cuboid.applyToReactor(cubes)
-    }
-
-    return cubes.size
-}
+fun countCubesInAllRebootSteps(input: List<String>): Long =
+    input.parse()
+        .compile()
+        .fold(0L) { acc, command -> acc + command.value() }
 
 private fun List<String>.parse(): List<Command> {
     return this.map { command(it) }
@@ -49,8 +59,20 @@ fun command(it: String): Command {
     )
 }
 
-enum class Action { on, off, intersection }
-data class Point3D(val x: Int, val y: Int, val z: Int)
+enum class Action {
+    on, off;
+
+    fun inverse() = when (this) {
+        on -> off
+        off -> on
+    }
+
+    fun direction() = when (this) {
+        on -> 1
+        off -> -1
+    }
+}
+
 data class Cuboid(val xMin: Int,
                   val xMax: Int,
                   val yMin: Int,
@@ -58,7 +80,7 @@ data class Cuboid(val xMin: Int,
                   val zMin: Int,
                   val zMax: Int) {
 
-    fun inside50x50BoxAtAll(): Boolean =
+    fun insideInitialisationSection(): Boolean =
         !((xMin < -50 && xMax < -50)
                 || (xMin >= 50 && xMax >= 50)
                 || (yMin <= -50 && yMax <= -50)
@@ -67,14 +89,14 @@ data class Cuboid(val xMin: Int,
                 || (zMin >= 50 && zMax >= 50))
 
     infix fun overlapsWith(that: Cuboid): Boolean {
-        return this overlapsOnXProjection that &&
-                this overlapsOnYProjection that &&
-                this overlapsOnZProjection that
+        return this overlapsOnXAxis that &&
+                this overlapsOnYAxis that &&
+                this overlapsOnZAxis that
     }
 
-    private infix fun overlapsOnXProjection(that: Cuboid) = this.xMin <= that.xMax && this.xMax >= that.xMin
-    private infix fun overlapsOnYProjection(that: Cuboid) = this.yMin <= that.yMax && this.yMax >= that.yMin
-    private infix fun overlapsOnZProjection(that: Cuboid) = this.zMin <= that.zMax && this.zMax >= that.zMin
+    private infix fun overlapsOnXAxis(that: Cuboid) = this.xMin <= that.xMax && this.xMax >= that.xMin
+    private infix fun overlapsOnYAxis(that: Cuboid) = this.yMin <= that.yMax && this.yMax >= that.yMin
+    private infix fun overlapsOnZAxis(that: Cuboid) = this.zMin <= that.zMax && this.zMax >= that.zMin
 
     fun intersectionWith(that: Cuboid): Cuboid {
         return Cuboid(
@@ -87,29 +109,15 @@ data class Cuboid(val xMin: Int,
         )
     }
 
+    fun volume() = ((1 + xMax.toLong() - xMin.toLong())
+            * (1 + yMax.toLong() - yMin.toLong())
+            * (1 + zMax.toLong() - zMin.toLong()))
 }
 
 data class Command(
     val action: Action,
     val cuboid: Cuboid
 ) {
-    fun applyToReactor(cubes: MutableSet<Point3D>) {
-        if (cuboid.inside50x50BoxAtAll()) {
-            for (x in cuboid.xMin..cuboid.xMax) {
-                for (y in cuboid.yMin..cuboid.yMax) {
-                    for (z in cuboid.zMin..cuboid.zMax) {
-                        when (action) {
-                            Action.on -> {
-                                cubes.add(Point3D(x, y, z))
-                            }
-                            Action.off -> {
-                                cubes.remove(Point3D(x, y, z))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    fun combineWith(that: Command) = Command(that.action.inverse(), this.cuboid.intersectionWith(that.cuboid))
+    fun value() = cuboid.volume() * action.direction()
 }
