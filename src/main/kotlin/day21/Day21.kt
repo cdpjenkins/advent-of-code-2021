@@ -7,33 +7,30 @@ fun main() {
     val input = File("src/main/resources", "Day21.txt").readText()
 
     println(day21Part1DeterministicDice(input))
+    day21Part2DiracDice(input)
 }
 
+fun day21Part2DiracDice(input: String) {
+    val initialGameState = input.initialGameState()
+
+    val universes: Map<GameState, Int> = mapOf(initialGameState to 1)
+
+    val newthingie = universes.entries.map { (gamestate, frequency) ->
+        gamestate.playOneTurn(1)
+    }
+
+    println(newthingie)
+}
 
 fun day21Part1DeterministicDice(input: CharSequence): Int {
-    val regex = "Player 1 starting position: ([0-9]{1,2})\nPlayer 2 starting position: ([0-9]{1,2})".toRegex()
-    val (p1Start, p2Start) = regex.find(input)
-        ?.destructured
-        ?.toList()
-        ?.map { it.toInt() }
-        ?: throw AssertionError("bang")
+    val gameState = input.initialGameState()
 
     val game = DeterministicGame(
-        gameState = GameState(
-            player1State = PlayerState(
-                score = 0,
-                position = p1Start
-            ),
-            player2State = PlayerState(
-                score = 0,
-                position = p2Start
-            )
-        )
+        gameState = gameState
     )
 
     while (game.gameState.winner() == null) {
         game.playTurn()
-        println("turn ${game.turnsPlayed} $game")
     }
 
     val losingScore = game.gameState.losingScore()
@@ -41,11 +38,34 @@ fun day21Part1DeterministicDice(input: CharSequence): Int {
     return losingScore * game.diceLastValue
 }
 
+private fun CharSequence.initialGameState(): GameState {
+    val regex = "Player 1 starting position: ([0-9]{1,2})\nPlayer 2 starting position: ([0-9]{1,2})".toRegex()
+    val (p1Start, p2Start) = regex.find(this)
+        ?.destructured
+        ?.toList()
+        ?.map { it.toInt() }
+        ?: throw AssertionError("bang")
+
+    val gameState = GameState(
+        player1State = PlayerState(
+            score = 0,
+            position = p1Start
+        ),
+        player2State = PlayerState(
+            score = 0,
+            position = p2Start
+        )
+    )
+
+    return gameState
+
+}
+
 data class PlayerState(
     val score: Int,
     val position: Int
 ) {
-    fun playOnePlayerTurn(diceTotal: Int) = PlayerState(
+    fun playOneTurn(diceTotal: Int) = PlayerState(
         position = modPositionRange(position + diceTotal),
         score = score + modPositionRange(position + diceTotal)
     )
@@ -60,17 +80,8 @@ data class GameState(
 ) {
     fun playOneTurn(diceTotal: Int): GameState {
         val nextGameState = when (nextPlayerTurn) {
-            1 -> {
-                copy(
-                    player1State = player1State.playOnePlayerTurn(diceTotal)
-                )
-            }
-            2 -> {
-
-                copy(
-                    player2State = player2State.playOnePlayerTurn(diceTotal)
-                )
-            }
+            1 -> copy(player1State = player1State.playOneTurn(diceTotal))
+            2 -> copy(player2State = player2State.playOneTurn(diceTotal))
             else -> throw AssertionError("Bad nextPlayerTurn: $nextPlayerTurn")
         }
 
