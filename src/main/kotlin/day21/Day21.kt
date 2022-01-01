@@ -7,19 +7,43 @@ fun main() {
     val input = File("src/main/resources", "Day21.txt").readText()
 
     println(day21Part1DeterministicDice(input))
-    day21Part2DiracDice(input)
+    println(day21Part2DiracDice(input))
 }
 
-fun day21Part2DiracDice(input: String) {
+fun day21Part2DiracDice(input: String): Pair<Long, Long> {
     val initialGameState = input.initialGameState()
 
-    val universes: Map<GameState, Int> = mapOf(initialGameState to 1)
+    // wish I could find an idiomatic and fast way to do this with and immutable map and pure functions...
+    val universes: MutableMap<GameState, Long> = mutableMapOf(initialGameState to 1L)
+    val wins: Array<Long> = arrayOf(-1L, 0L, 0L)
 
-    val newthingie = universes.entries.map { (gamestate, frequency) ->
-        gamestate.playOneTurn(1)
+    while (!universes.isEmpty()) {
+        val (state, frequency) = universes.popFirstEntry()
+
+        // could use a Pascal's triangle and save from computing the same move several times in a lot of cases
+        for (d1 in 1..3) {
+            for (d2 in 1..3) {
+                for (d3 in 1..3) {
+                    val newState = state.playOneTurn(d1 + d2 + d3)
+                    val winner = newState.winner(winningScore = 21)
+
+                    if (winner == null) {
+                        universes[newState] = universes.getOrDefault(newState, 0) + frequency
+                    } else {
+                        wins[winner] += frequency
+                    }
+                }
+            }
+        }
     }
 
-    println(newthingie)
+    return Pair(wins[1], wins[2])
+}
+
+private fun MutableMap<GameState, Long>.popFirstEntry(): MutableMap.MutableEntry<GameState, Long> {
+    val entry = iterator().next()
+    remove(entry.key)
+    return entry
 }
 
 fun day21Part1DeterministicDice(input: CharSequence): Int {
@@ -97,9 +121,9 @@ data class GameState(
             else -> throw AssertionError("urgh")
         }
 
-    fun winner(): Int? {
-        if (player1State.score >= 1000) return 1
-        if (player2State.score >= 1000) return 2
+    fun winner(winningScore: Int = 1000): Int? {
+        if (player1State.score >= winningScore) return 1
+        if (player2State.score >= winningScore) return 2
         return null
     }
 }

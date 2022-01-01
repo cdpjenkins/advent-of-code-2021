@@ -6,12 +6,17 @@ import org.junit.jupiter.api.Test
 
 internal class Day21KtTest {
     @Test
-    internal fun `day 21 part 1 deterministic dice`() {
-        val result = day21Part1DeterministicDice(input)
-        assertThat(result, equalTo(739785))
-
+    fun `day 21 part 1 deterministic dice with test data`() {
+        assertThat(day21Part1DeterministicDice(input), equalTo(739785))
     }
 
+    @Test
+    fun `day 21 part 2 dirac dice with test data`() {
+        val (player1Wins, player2Wins) = day21Part2DiracDice(input)
+
+        assertThat(player1Wins, equalTo(444356092776315L))
+        assertThat(player2Wins, equalTo(341960390180808L))
+    }
 }
 
 var input = """
