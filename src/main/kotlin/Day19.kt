@@ -1,15 +1,35 @@
+import java.lang.Math.abs
+
 fun main() {
     val input = readInput("Day19")
 
-    println(findNumberOfBeacons(input))
+    val scanners = input.parse().findAllTheScanners()
+
+    println(scanners.findNumberOfBeacons())
+    println(scanners.maxManhattenDistance())
 }
 
+fun List<String>.maxManhattenDistance() = parse().findAllTheScanners().maxManhattenDistance()
 
-fun findNumberOfBeacons(input: List<String>): Int {
-    val scannerReports = input.parse()
+fun Set<ScannerReport>.maxManhattenDistance() =
+    flatMap {
+        map { that -> it.location.manhattenDistance(that.location) }
+    }.maxOfOrNull { it }!!
 
-    var correctlyOrientedSet: Set<ScannerReport> = setOf(scannerReports[0])
-    var remaining = scannerReports.minus(correctlyOrientedSet)
+fun List<String>.findNumberOfBeacons() =
+    this.parse()
+        .findAllTheScanners()
+        .findAllTheBeacons()
+        .size
+
+fun Set<ScannerReport>.findNumberOfBeacons() = findAllTheBeacons().size
+
+fun Set<ScannerReport>.findAllTheBeacons(): Set<Vector3D> =
+    this.fold(emptySet()) { acc, report -> acc.union(report.scans) }
+
+private fun List<ScannerReport>.findAllTheScanners(): Set<ScannerReport> {
+    var correctlyOrientedSet: Set<ScannerReport> = setOf(this[0])
+    var remaining = minus(correctlyOrientedSet)
 
     while (!remaining.isEmpty()) {
         correctlyOrientedSet.forEach { correctlyOrientedReport ->
@@ -25,10 +45,7 @@ fun findNumberOfBeacons(input: List<String>): Int {
             }
         }
     }
-
     return correctlyOrientedSet
-        .fold<ScannerReport, Set<Vector3D>>(emptySet()) { acc, report -> acc.union(report.scans) }
-        .size
 }
 
 private fun List<String>.parse(): MutableList<ScannerReport> {
@@ -47,14 +64,14 @@ private fun List<String>.parse(): MutableList<ScannerReport> {
             Vector3D(x.toInt(), y.toInt(), z.toInt())
         }.toSet()
 
-        scannerReports.add(ScannerReport(scannerNumber.toInt(), scans))
+        scannerReports.add(ScannerReport(scannerNumber.toInt(), scans, Vector3D.ZERO))
 
         input = input.dropWhile { it.isNotEmpty() }
     }
     return scannerReports
 }
 
-data class ScannerReport(val scannerNumber: Int, val scans: Set<Vector3D>) {
+data class ScannerReport(val scannerNumber: Int, val scans: Set<Vector3D>, val location: Vector3D) {
     fun tryToMatchWith(that: ScannerReport): ScannerReport? {
         this.scans.forEach { thisScan ->
             Matrix3D.EVERY_TRANSFORM.forEach { rotation ->
@@ -62,11 +79,10 @@ data class ScannerReport(val scannerNumber: Int, val scans: Set<Vector3D>) {
                 rotatedScans.forEach { thatScan ->
                     val scansWithCorrectOrientation = rotatedScans.map { it - thatScan + thisScan }.toSet()
                     if (scansWithCorrectOrientation.intersect(scans).size == 12) {
-                        return that.copy(scans = scansWithCorrectOrientation)
+                        return that.copy(scans = scansWithCorrectOrientation, location = thatScan - thisScan)
                     }
                 }
             }
-
         }
 
         // we did not find a match
@@ -92,6 +108,8 @@ data class Vector3D(val x: Int, val y: Int, val z: Int) {
         )
 
     operator fun unaryMinus() = Vector3D(-this.x, -this.y, -this.z)
+
+    fun manhattenDistance(that: Vector3D) = abs(this.x - that.x) + abs(this.y - that.y) + abs(this.z - that.z)
 
     companion object {
         val ZERO = Vector3D(0, 0, 0)

@@ -4,10 +4,13 @@ import org.junit.jupiter.api.Test
 
 class Day19KtTest {
     @Test
-    fun `day 19 part 1`() {
-        val numberOfBeacons = findNumberOfBeacons(testInput)
+    fun `day 19 part 1 finds all the beacons`() {
+        assertThat(testInput.findNumberOfBeacons(), equalTo(79))
+    }
 
-        assertThat(numberOfBeacons, equalTo(79))
+    @Test
+    fun `day 19 part 2 finds the max manhatten distance between scanners`() {
+        assertThat(testInput.maxManhattenDistance(), equalTo(3621))
     }
 }
 
