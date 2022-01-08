@@ -1,4 +1,4 @@
-package day4
+package day04
 
 import readInput
 import java.lang.AssertionError

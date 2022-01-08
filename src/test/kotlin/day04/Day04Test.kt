@@ -1,4 +1,4 @@
-package day4
+package day04
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
