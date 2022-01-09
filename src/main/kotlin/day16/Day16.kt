@@ -1,15 +1,18 @@
 package day16
 
 import readInput
-import java.lang.AssertionError
-import java.math.BigInteger
 
 fun main() {
     val input = readInput("Day16").first()
 
-    val versionSum = versionSum(input)
-    println(versionSum)
+    println(versionSum(input))
+    println(evaluate(input))
 }
+
+fun evaluate(hex: String): Long =
+    BinarySource.of(hex)
+        .parsePacket()
+        .evaluate()
 
 fun versionSum(hex: String) =
     BinarySource.of(hex)
@@ -29,10 +32,10 @@ private fun String.pad(): String {
 data class BinarySource(var binaryString: String) {
     fun parsePacket(): Packet {
         val version = take(3).toInt(2)
-        val packetTypeId = take(3).toInt(2)
+        val packetTypeId = TypeID.of(take(3).toInt(2))
 
-        if (packetTypeId == 4) {
-            var accumulator = 0
+        if (packetTypeId == TypeID.LITERAL) {
+            var accumulator = 0L
             do {
                 var done = false
 
@@ -58,7 +61,7 @@ data class BinarySource(var binaryString: String) {
                     while (subPacketsSource.binaryString.isNotEmpty()) {
                         subPackets.add(subPacketsSource.parsePacket())
                     }
-                    return Operator(version, subPackets)
+                    return packetTypeId.operator(version, subPackets)
                 }
                 "1" -> {
                     val numSubPackets = take(11).toInt(2)
@@ -67,7 +70,7 @@ data class BinarySource(var binaryString: String) {
                     for (i in 1..numSubPackets) {
                         subPackets.add(parsePacket())
                     }
-                    return Operator(version, subPackets)
+                    return packetTypeId.operator(version, subPackets)
                 }
                 else -> {
                     throw AssertionError(lengthTypeID)
@@ -83,7 +86,8 @@ data class BinarySource(var binaryString: String) {
     }
 
     companion object {
-        private fun String.toBinary() = BigInteger(this, 16).toString(2).pad()
+        private fun String.toBinary() = this.map { hexDigitToBinaryString(it) }.joinToString("")
+        private fun hexDigitToBinaryString(hexDigit: Char) = hexDigit.toString().toInt(radix = 16).toString(radix = 2).pad()
         fun of(hex: String) = BinarySource(hex.toBinary())
     }
 }
@@ -91,12 +95,62 @@ data class BinarySource(var binaryString: String) {
 
 sealed class Packet(val version: Int) {
     abstract fun versionSum(): Int
+    abstract fun evaluate(): Long
 }
 
-data class Literal(val literalVersion: Int, val value: Int): Packet(literalVersion) {
+data class Literal(val literalVersion: Int, val value: Long): Packet(literalVersion) {
     override fun versionSum() = this.version
+    override fun evaluate() = value
 }
 
-data class Operator(val operatorVersion: Int, val subPackets: List<Packet>): Packet(operatorVersion) {
+data class Operator(val operatorVersion: Int, val subPackets: List<Packet>, val sum: TypeID): Packet(operatorVersion) {
     override fun versionSum() = this.version + subPackets.sumOf { it.versionSum() }
+    override fun evaluate(): Long = sum.evaluate(this.subPackets)
+}
+
+enum class TypeID(val id: Int) {
+    SUM(0) {
+        override fun operator(version: Int, subPackets: List<Packet>): Operator = Operator(version, subPackets, this)
+        override fun evaluate(subPackets: List<Packet>): Long = subPackets.sumOf { it.evaluate() }
+    },
+    PRODUCT(1) {
+        override fun operator(version: Int, subPackets: List<Packet>): Operator = Operator(version, subPackets, this)
+        override fun evaluate(subPackets: List<Packet>) = subPackets.map { it.evaluate() }.fold(1L) { acc, x -> acc * x }
+    },
+    MINIMUM(2) {
+        override fun operator(version: Int, subPackets: List<Packet>): Operator = Operator(version, subPackets, this)
+        override fun evaluate(subPackets: List<Packet>) = subPackets.map { it.evaluate() }.minByOrNull { it }!!
+    },
+    MAXIMUM(3) {
+        override fun operator(version: Int, subPackets: List<Packet>): Operator = Operator(version, subPackets, this)
+        override fun evaluate(subPackets: List<Packet>) = subPackets.map { it.evaluate() }.maxByOrNull { it }!!
+    },
+    LITERAL(4) {
+        override fun operator(version: Int, subPackets: List<Packet>): Operator = Operator(version, subPackets, this)
+        override fun evaluate(subPackets: List<Packet>): Long {
+            throw AssertionError("Due to sloppy coding, this does not get called")
+        }
+    },
+    GREATER_THAN(5) {
+        override fun operator(version: Int, subPackets: List<Packet>): Operator = Operator(version, subPackets, this)
+        override fun evaluate(subPackets: List<Packet>) =
+            if (subPackets[0].evaluate() > subPackets[1].evaluate()) 1L else 0L
+    },
+    LESS_THAN(6) {
+        override fun operator(version: Int, subPackets: List<Packet>): Operator = Operator(version, subPackets, this)
+        override fun evaluate(subPackets: List<Packet>) =
+            if (subPackets[0].evaluate() < subPackets[1].evaluate()) 1L else 0L
+    },
+    EQUAL_TO(7) {
+        override fun operator(version: Int, subPackets: List<Packet>): Operator = Operator(version, subPackets, this)
+        override fun evaluate(subPackets: List<Packet>) =
+            if (subPackets[0].evaluate() == subPackets[1].evaluate()) 1L else 0L
+    };
+
+    abstract fun operator(version: Int, subPackets: List<Packet>): Operator
+    abstract fun evaluate(subPackets: List<Packet>): Long
+
+    companion object {
+        fun of(value: Int) = values().first { it.id == value }
+    }
 }

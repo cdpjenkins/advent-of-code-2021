@@ -7,7 +7,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
 internal class Day16KtTest {
-
     @ParameterizedTest
     @CsvSource(
         "8A004A801A8002F478,16",
@@ -17,6 +16,21 @@ internal class Day16KtTest {
     )
     internal fun `day 16 part 1`(hex: String, expectedSum: Int) {
         assertThat(versionSum(hex), equalTo(expectedSum))
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "C200B40A82,3",
+        "04005AC33890,54",
+        "880086C3E88112,7",
+        "CE00C43D881120,9",
+        "D8005AC2A8F0,1",
+        "F600BC2D8F,0",
+        "9C005AC2F8F0,0",
+        "9C0141080250320F1802104A08,1"
+    )
+    internal fun `day 16 part 2 evaluates packets`(hex: String, expectedResult: Int) {
+        assertThat(evaluate(hex), equalTo(expectedResult))
     }
 
     @Test
@@ -34,7 +48,8 @@ internal class Day16KtTest {
                     listOf(
                         Literal(6, 10),
                         Literal(2, 20)
-                    )
+                    ),
+                    TypeID.LESS_THAN
                 )
             )
         )
@@ -51,7 +66,8 @@ internal class Day16KtTest {
                         Literal(2, 1),
                         Literal(4, 2),
                         Literal(1, 3)
-                    )
+                    ),
+                    TypeID.MAXIMUM
                 )
             )
         )
