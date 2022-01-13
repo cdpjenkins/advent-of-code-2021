@@ -29,7 +29,7 @@ internal class Day16KtTest {
         "9C005AC2F8F0,0",
         "9C0141080250320F1802104A08,1"
     )
-    internal fun `day 16 part 2 evaluates packets`(hex: String, expectedResult: Int) {
+    internal fun `day 16 part 2 evaluates packets`(hex: String, expectedResult: Long) {
         assertThat(evaluate(hex), equalTo(expectedResult))
     }
 
